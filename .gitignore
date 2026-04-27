@@ -1,0 +1,8 @@
+node_modules/
+.facebook-state.json
+facebook_posts.json
+.env    
+__pycache__/
+*.pyc
+.venv/
+.env

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rentd - Saved Listings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "background": "#f7fafc",
+                    "primary-fixed-dim": "#81d1f0",
+                    "primary-fixed": "#b9eaff",
+                    "tertiary-fixed-dim": "#c4c7c9",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "on-tertiary-container": "#eaecee",
+                    "surface-dim": "#d7dadd",
+                    "on-secondary-container": "#54647a",
+                    "inverse-primary": "#81d1f0",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e0e3e5",
+                    "on-tertiary-fixed-variant": "#444749",
+                    "tertiary-fixed": "#e0e3e5",
+                    "on-primary-fixed": "#001f29",
+                    "on-surface-variant": "#3f484c",
+                    "inverse-on-surface": "#eef1f3",
+                    "on-primary": "#ffffff",
+                    "surface-container-low": "#f1f4f6",
+                    "on-tertiary-fixed": "#191c1e",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-error": "#ffffff",
+                    "primary-container": "#0e7490",
+                    "secondary-container": "#d0e1fb",
+                    "outline-variant": "#bec8cd",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#005a71",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-tint": "#006781",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "secondary-fixed": "#d3e4fe",
+                    "on-primary-container": "#d3f1ff",
+                    "on-error-container": "#93000a",
+                    "surface-container-high": "#e6e8eb",
+                    "outline": "#6f787d",
+                    "inverse-surface": "#2d3133",
+                    "surface": "#f7fafc",
+                    "surface-bright": "#f7fafc",
+                    "surface-container": "#ebeef0",
+                    "on-primary-fixed-variant": "#004d62",
+                    "tertiary": "#505355",
+                    "on-surface": "#181c1e",
+                    "error-container": "#ffdad6",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#181c1e",
+                    "secondary": "#505f76",
+                    "tertiary-container": "#686b6d",
+                    "on-secondary-fixed": "#0b1c30"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base-unit": "8px",
+                    "gutter": "24px",
+                    "margin-mobile": "16px",
+                    "stack-lg": "48px",
+                    "margin-desktop": "64px",
+                    "stack-md": "24px",
+                    "container-max": "1280px",
+                    "stack-sm": "12px",
+                    "stack-xs": "4px"
+            },
+            "fontFamily": {
+                    "label-bold": ["Manrope"],
+                    "label-subtle": ["Manrope"],
+                    "body-base": ["Manrope"],
+                    "headline-h1": ["Manrope"],
+                    "display-lg": ["Manrope"],
+                    "body-sm": ["Manrope"],
+                    "headline-h2": ["Manrope"]
+            },
+            "fontSize": {
+                    "label-bold": ["12px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "label-subtle": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                    "body-base": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-h1": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "headline-h2": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .ambient-shadow {
+            box-shadow: 0 12px 24px -4px rgba(0, 90, 113, 0.08);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background min-h-screen text-on-background antialiased pb-24 md:pb-0 font-body-base text-body-base">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-slate-900 shadow-sm dark:shadow-none docked full-width top-0 z-50">
+<div class="flex justify-between items-center w-full px-4 h-16 max-w-7xl mx-auto">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-cyan-700 dark:text-cyan-400">roofing</span>
+<span class="text-2xl font-black text-cyan-700 dark:text-cyan-400 tracking-tighter font-manrope antialiased tracking-tight">Rentd</span>
+</div>
+<!-- Desktop Navigation Cluster -->
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors px-3 py-2 rounded-md font-label-bold text-label-bold uppercase" href="#">Home</a>
+<a class="text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors px-3 py-2 rounded-md font-label-bold text-label-bold uppercase" href="#">Search</a>
+<a class="text-cyan-700 dark:text-cyan-400 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors px-3 py-2 rounded-md font-label-bold text-label-bold uppercase border-b-2 border-cyan-700" href="#">Saved</a>
+<a class="text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors px-3 py-2 rounded-md font-label-bold text-label-bold uppercase" href="#">Profile</a>
+</nav>
+<button class="material-symbols-outlined text-cyan-700 dark:text-cyan-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors p-2 rounded-full active:scale-95 duration-150">search</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pt-stack-lg">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:justify-between md:items-end mb-stack-lg gap-4">
+<div>
+<h1 class="font-display-lg text-display-lg text-on-surface">Saved</h1>
+<p class="font-body-base text-body-base text-on-surface-variant mt-stack-xs">You are tracking 4 properties.</p>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-lg text-on-surface hover:bg-surface-variant transition-colors font-label-bold text-label-bold bg-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined text-[18px]">compare_arrows</span>
+                    Compare (0)
+                </button>
+</div>
+</div>
+<!-- Bento Grid Listings -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Featured Card (Wide) -->
+<article class="md:col-span-8 bg-surface-container-lowest rounded-xl border border-surface-variant overflow-hidden group hover:ambient-shadow transition-shadow duration-300 flex flex-col md:flex-row relative">
+<button class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full text-primary shadow-sm hover:scale-105 transition-transform z-10 flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+</button>
+<div class="h-64 md:h-auto md:w-[45%] bg-cover bg-center relative" data-alt="Modern luxury kitchen with dark marble island, warm pendant lighting, and floor-to-ceiling windows overlooking a city skyline at dusk." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD8qKM1-jlEsQow4CblChF1ATAW8QlcdPmla0w8DeFqqqkoBlI72uIEeYHr2Kqd7UyapQKwj_oRwe2OVgJZnI9Pls0sLNDIQQbV25HQBTgqpCxrCIztsbapz3FIhDoumqcbHQbqgSFvxrI9kdNa139et1iwW7Hrrf-8TXT61Am6fmE4_jF76pFIEZuBFX64Tpp8g6rUqyQ20XBZ1yUQT0WatG9D_oQRCsusc7i59exDKgCBSSpqBIiZqypgnym3Z2NtTf4ZW77Zn5sf')">
+<div class="absolute top-4 left-4">
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-bold text-label-bold shadow-sm">Verified</span>
+</div>
+</div>
+<div class="p-6 md:p-8 flex flex-col justify-between md:w-[55%]">
+<div>
+<div class="flex items-baseline gap-2 mb-2">
+<span class="font-headline-h1 text-headline-h1 text-primary">$4,850</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/month</span>
+</div>
+<h2 class="font-headline-h2 text-headline-h2 text-on-surface mb-2">The Glasshouse Penthouse</h2>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span>Downtown Core, 1200 Skyview Ave</span>
+</div>
+</div>
+<div class="mt-stack-md">
+<div class="flex items-center gap-6 border-y border-surface-variant py-4 mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">bed</span>
+<span class="font-label-bold text-label-bold text-on-surface">3</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">shower</span>
+<span class="font-label-bold text-label-bold text-on-surface">2.5</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">straighten</span>
+<span class="font-label-bold text-label-bold text-on-surface">1,850 sqft</span>
+</div>
+</div>
+<label class="flex items-center gap-3 cursor-pointer group/checkbox">
+<input class="rounded border-outline text-primary focus:ring-primary w-5 h-5 bg-surface-container-lowest transition-colors cursor-pointer" type="checkbox"/>
+<span class="font-label-bold text-label-bold text-on-surface group-hover/checkbox:text-primary transition-colors">Select for Comparison</span>
+</label>
+</div>
+</div>
+</article>
+<!-- Standard Card (Vertical) -->
+<article class="md:col-span-4 bg-surface-container-lowest rounded-xl border border-surface-variant overflow-hidden group hover:ambient-shadow transition-shadow duration-300 relative flex flex-col">
+<button class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full text-primary shadow-sm hover:scale-105 transition-transform z-10 flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+</button>
+<div class="h-56 bg-cover bg-center" data-alt="Bright, minimalist living room with white walls, a gray sofa, geometric rug, and large windows letting in abundant natural daylight." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBUu_FEqEAjHFd3DSqYcPBTuEF8E2pK4pL8MohTQP5HNJyzvaeMO_kLgnDQbdcK_L5tI30UgwSS8W9K8TSHQumI6Mf8na_-t6NZCsPmrGN-OjDASR9E4pHAOEo7cypbtNsf0PJ-6ySRMG-rCWMG_mFuBOLDfgr7DdIlDQWf5JMq-fFjYo7FokcgK_tG60gEfVhYgEFmqFKvultVmtCdTLBYmnybxjypH6UwrqVvglx35600mpY6yZICkl-ea2Cr-YeKM9QR9bfJ_QOe')"></div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex items-baseline gap-2 mb-2">
+<span class="font-headline-h2 text-headline-h2 text-primary">$2,900</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/month</span>
+</div>
+<h2 class="font-body-base text-body-base font-semibold text-on-surface mb-1 line-clamp-1">Nordic Style Loft</h2>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm mb-stack-sm">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="line-clamp-1">Westside Arts District</span>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant font-label-subtle text-label-subtle mb-stack-md mt-auto">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">bed</span> 2</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">shower</span> 1</span>
+</div>
+<label class="flex items-center gap-3 cursor-pointer group/checkbox border-t border-surface-variant pt-4">
+<input class="rounded border-outline text-primary focus:ring-primary w-5 h-5 bg-surface-container-lowest transition-colors cursor-pointer" type="checkbox"/>
+<span class="font-label-bold text-label-bold text-on-surface group-hover/checkbox:text-primary transition-colors">Compare</span>
+</label>
+</div>
+</article>
+<!-- Half Width Card -->
+<article class="md:col-span-6 bg-surface-container-lowest rounded-xl border border-surface-variant overflow-hidden group hover:ambient-shadow transition-shadow duration-300 relative flex flex-col md:flex-row">
+<button class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full text-primary shadow-sm hover:scale-105 transition-transform z-10 flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+</button>
+<div class="h-48 md:h-auto md:w-2/5 bg-cover bg-center" data-alt="Modern bathroom with sleek freestanding tub, matte black fixtures, and large terrazzo tiles in soft neutral tones." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBEGykJQ3DzAZiYX0eiLF9u8ISHreYCARJ61wDS1UihFVpYXHNglSnDTZ3W5aAkhn_U1R6Y0Q5kE6afDZJCzRrspQULmvgp1jksaEiJ_mAs_RavYguXHXlexMv-J_rApNOrIuRaljc-7Ao4LQu4-04ugyxG-6U2mVg_p9hN5gs8R2MvjntdXRAe0V2GOdq_wvZbenAd6cu4kam3V46X3vp74FoQy_LCzDa1mK_8-Nv3V3YtgwPLEfYrynMzHaJNODHaxB9cE4_1RW3M')"></div>
+<div class="p-5 md:w-3/5 flex flex-col justify-center">
+<div class="flex items-baseline gap-2 mb-1">
+<span class="font-headline-h2 text-headline-h2 text-primary">$3,450</span>
+</div>
+<h2 class="font-body-base text-body-base font-semibold text-on-surface mb-1">Urban Oasis Studio</h2>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm mb-4">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="line-clamp-1">Tech Park Perimeter</span>
+</div>
+<div class="flex items-center justify-between border-t border-surface-variant pt-4 mt-auto">
+<div class="flex items-center gap-3 text-on-surface-variant font-label-subtle text-label-subtle">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">bed</span> 1</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">shower</span> 1</span>
+</div>
+<label class="flex items-center gap-2 cursor-pointer group/checkbox">
+<input class="rounded border-outline text-primary focus:ring-primary w-4 h-4 bg-surface-container-lowest transition-colors cursor-pointer" type="checkbox"/>
+<span class="font-label-bold text-label-bold text-on-surface sr-only">Compare</span>
+</label>
+</div>
+</div>
+</article>
+<!-- Half Width Card -->
+<article class="md:col-span-6 bg-surface-container-lowest rounded-xl border border-surface-variant overflow-hidden group hover:ambient-shadow transition-shadow duration-300 relative flex flex-col md:flex-row">
+<button class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full text-primary shadow-sm hover:scale-105 transition-transform z-10 flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+</button>
+<div class="h-48 md:h-auto md:w-2/5 bg-cover bg-center" data-alt="Cozy bedroom with textured linen bedding, warm wood nightstands, and soft morning light filtering through sheer curtains." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCBAPcGRliUq2FjxpftGr4tjP4JLJmXMgaRH9WuvijbEpRnBVAqPUIYvKkySb0kAzf8l6SNLkzWbK4PnT6XGhYC1i-G-8POnG3H9TjMVBGQxtFtEd-EzO0dKuxob_mG1a4YK1DiD2KOCCWDAtyXAwslQf2kxvAaI-4yeRzg2jK0TSs-RS-eJus7RX96BbabzoZ5H9wqEJzPiiln_AmYOlb22Vvfua7AM6ikhv3gNAbUJ6s9a2m8bfepk0rXi2P1ZjyZzyUiu5wC936D')"></div>
+<div class="p-5 md:w-3/5 flex flex-col justify-center">
+<div class="flex items-baseline gap-2 mb-1">
+<span class="font-headline-h2 text-headline-h2 text-primary">$2,100</span>
+</div>
+<h2 class="font-body-base text-body-base font-semibold text-on-surface mb-1">Heritage Brownstone</h2>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm mb-4">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="line-clamp-1">Historic District North</span>
+</div>
+<div class="flex items-center justify-between border-t border-surface-variant pt-4 mt-auto">
+<div class="flex items-center gap-3 text-on-surface-variant font-label-subtle text-label-subtle">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">bed</span> 1</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">shower</span> 1</span>
+</div>
+<label class="flex items-center gap-2 cursor-pointer group/checkbox">
+<input class="rounded border-outline text-primary focus:ring-primary w-4 h-4 bg-surface-container-lowest transition-colors cursor-pointer" type="checkbox"/>
+<span class="font-label-bold text-label-bold text-on-surface sr-only">Compare</span>
+</label>
+</div>
+</div>
+</article>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-2 py-3 pb-safe z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 shadow-[0_-4px_12px_rgba(14,116,144,0.05)]">
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50 active:opacity-80 transition-all px-2 py-1" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-manrope text-[10px] font-bold uppercase tracking-widest">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50 active:opacity-80 transition-all px-2 py-1" href="#">
+<span class="material-symbols-outlined mb-1">search</span>
+<span class="font-manrope text-[10px] font-bold uppercase tracking-widest">Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-900/30 rounded-xl px-4 py-1 active:opacity-80 transition-all" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+<span class="font-manrope text-[10px] font-bold uppercase tracking-widest">Saved</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50 active:opacity-80 transition-all px-2 py-1" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-manrope text-[10px] font-bold uppercase tracking-widest">Profile</span>
+</a>
+</nav>
+</body></html>

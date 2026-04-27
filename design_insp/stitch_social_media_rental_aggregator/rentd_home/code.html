@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rentd - Discovery</title>
+<!-- Google Fonts: Manrope -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#f7fafc",
+                        "primary-fixed-dim": "#81d1f0",
+                        "primary-fixed": "#b9eaff",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-tertiary-container": "#eaecee",
+                        "surface-dim": "#d7dadd",
+                        "on-secondary-container": "#54647a",
+                        "inverse-primary": "#81d1f0",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e0e3e5",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "tertiary-fixed": "#e0e3e5",
+                        "on-primary-fixed": "#001f29",
+                        "on-surface-variant": "#3f484c",
+                        "inverse-on-surface": "#eef1f3",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f1f4f6",
+                        "on-tertiary-fixed": "#191c1e",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-error": "#ffffff",
+                        "primary-container": "#0e7490",
+                        "secondary-container": "#d0e1fb",
+                        "outline-variant": "#bec8cd",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#005a71",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-tint": "#006781",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "secondary-fixed": "#d3e4fe",
+                        "on-primary-container": "#d3f1ff",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#e6e8eb",
+                        "outline": "#6f787d",
+                        "inverse-surface": "#2d3133",
+                        "surface": "#f7fafc",
+                        "surface-bright": "#f7fafc",
+                        "surface-container": "#ebeef0",
+                        "on-primary-fixed-variant": "#004d62",
+                        "tertiary": "#505355",
+                        "on-surface": "#181c1e",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#181c1e",
+                        "secondary": "#505f76",
+                        "tertiary-container": "#686b6d",
+                        "on-secondary-fixed": "#0b1c30"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base-unit": "8px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "stack-lg": "48px",
+                        "margin-desktop": "64px",
+                        "stack-md": "24px",
+                        "container-max": "1280px",
+                        "stack-sm": "12px",
+                        "stack-xs": "4px"
+                    },
+                    "fontFamily": {
+                        "label-bold": ["Manrope"],
+                        "label-subtle": ["Manrope"],
+                        "body-base": ["Manrope"],
+                        "headline-h1": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "body-sm": ["Manrope"],
+                        "headline-h2": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "label-bold": ["12px", { "lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "label-subtle": ["12px", { "lineHeight": "1.4", "fontWeight": "500" }],
+                        "body-base": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-h1": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-h2": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Custom subtle ambient shadow for interactive elements */
+        .ambient-shadow {
+            box-shadow: 0 12px 24px -4px rgba(0, 90, 113, 0.08);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-base antialiased pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 bg-surface-container-lowest/90 backdrop-blur-md shadow-[0_4px_24px_rgba(0,0,0,0.02)] transition-colors">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 max-w-container-max mx-auto">
+<!-- Leading / Brand -->
+<div class="flex items-center gap-stack-sm cursor-pointer active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">roofing</span>
+<span class="font-headline-h2 text-headline-h2 text-primary font-extrabold tracking-tighter">Rentd</span>
+</div>
+<!-- Desktop Navigation (Hidden on Mobile) -->
+<nav class="hidden md:flex items-center gap-stack-md">
+<a class="font-label-bold text-label-bold text-primary flex items-center gap-2 hover:bg-surface-container-high px-3 py-2 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">home</span>
+                    Home
+                </a>
+<a class="font-label-subtle text-label-subtle text-on-surface-variant flex items-center gap-2 hover:bg-surface-container-high px-3 py-2 rounded-lg transition-colors hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[18px]">search</span>
+                    Search
+                </a>
+<a class="font-label-subtle text-label-subtle text-on-surface-variant flex items-center gap-2 hover:bg-surface-container-high px-3 py-2 rounded-lg transition-colors hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[18px]">bookmark</span>
+                    Saved
+                </a>
+<a class="font-label-subtle text-label-subtle text-on-surface-variant flex items-center gap-2 hover:bg-surface-container-high px-3 py-2 rounded-lg transition-colors hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[18px]">person</span>
+                    Profile
+                </a>
+</nav>
+<!-- Trailing Action -->
+<button class="md:hidden p-2 text-primary rounded-full hover:bg-surface-container-high active:scale-95 duration-150 transition-colors">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+</header>
+<main class="w-full max-w-container-max mx-auto">
+<!-- Hero & Search Section -->
+<section class="px-margin-mobile md:px-margin-desktop py-stack-lg md:py-16 flex flex-col items-center justify-center text-center bg-surface-container-low rounded-b-[32px] md:rounded-[32px] md:mt-stack-sm md:mx-margin-mobile relative overflow-hidden">
+<div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top_right,_var(--tw-colors-primary-container),_transparent_50%)] pointer-events-none"></div>
+<div class="max-w-2xl relative z-10 w-full">
+<h1 class="font-display-lg text-display-lg text-on-surface mb-stack-sm">Find Your Habitat.</h1>
+<p class="font-body-base text-body-base text-on-surface-variant mb-stack-md">Discover premium rentals extracted in real-time from verified social channels and trusted landlords.</p>
+<!-- Search Bar -->
+<div class="flex flex-col sm:flex-row gap-stack-xs sm:gap-0 bg-surface-container-lowest p-2 rounded-xl sm:rounded-full border border-outline-variant shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
+<div class="flex-1 flex items-center px-4 py-2 sm:py-0">
+<span class="material-symbols-outlined text-outline mr-2">location_on</span>
+<input class="w-full bg-transparent border-none focus:ring-0 text-on-surface font-body-base text-body-base placeholder:text-outline-variant outline-none" placeholder="Search by city, neighborhood, or zip code..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary font-label-bold text-label-bold px-6 py-3 rounded-lg sm:rounded-full hover:bg-primary-container transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">search</span>
+                        Search
+                    </button>
+</div>
+</div>
+</section>
+<!-- Browse by Locality (Bento Layout) -->
+<section class="px-margin-mobile md:px-margin-desktop py-stack-lg">
+<div class="flex justify-between items-end mb-stack-md">
+<div>
+<h2 class="font-headline-h1 text-headline-h1 text-on-surface">Popular Localities</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-stack-xs">Explore neighborhoods with high rental turnover.</p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-stack-md auto-rows-[240px]">
+<!-- Large Card -->
+<a class="group md:col-span-2 md:row-span-2 rounded-xl overflow-hidden relative block shadow-sm hover:ambient-shadow transition-all duration-300" href="#">
+<img alt="Downtown" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="aerial view of a dense modern urban downtown skyline at golden hour with waterfront" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL5jBUVRIO1D8_GSfAUvA7wOYjNvQlYTnjUlxdiszoJcAbYc394X25GLQ4cCLuwRAbpJ40q4r_CJVqjlzKqjNbtWmChCQ5hVl6-JI2UAnwhpXNV_OiEd_Ymf7oDrlrZKVoww29mXv0dGwZmZ2ykzmMMh3Zb1LFDrAMBTH_TWmF3vMLmTHZk0-v9FPG3V5yPkRbJVW53gzLWVMmS2cuIko5-VgDMhEhU2dNeGPMLYb3wP8aX8evayMlmIJG5Gt8fsIPe_AKp_Pb6gdG"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/90 via-on-surface/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-stack-md w-full">
+<h3 class="font-headline-h2 text-headline-h2 text-on-primary">Downtown Metro</h3>
+<p class="font-body-sm text-body-sm text-on-primary/80 mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">monitoring</span> 243 new listings today
+                        </p>
+</div>
+</a>
+<!-- Medium Card 1 -->
+<a class="group md:col-span-2 rounded-xl overflow-hidden relative block shadow-sm hover:ambient-shadow transition-all duration-300" href="#">
+<img alt="Westside Heights" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="quiet tree lined suburban street with modern townhouses and dappled sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXpddnxyJV_GdhtOVQjp_mS7X2s9nuJtelVP7xKuzohWZUhSYOSauHWYcjyCRqeGeRRBp1A6phube7uGlfk9Cy4nHCEtYnAaBhlGZzpm8eDYdgDGfrwszROrIzbxZ-bMYY9p2Di6cf2oT4MdQGGM68oedR0U_vbxPEcnQb1KzA6CQGLq4SdfI6Ul1zWKHwhpLqcC2NH9IcZJLCmhG6pg2lI-70-k-IJDzZsvezDWgQJ6TgA_Eig0cdvXVRFN7FoxLkNg66IC3CtF88"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/90 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-stack-sm w-full">
+<h3 class="font-body-base text-body-base font-bold text-on-primary">Westside Heights</h3>
+<p class="font-body-sm text-body-sm text-on-primary/80 mt-1">Family friendly &amp; Parks</p>
+</div>
+</a>
+<!-- Medium Card 2 -->
+<a class="group md:col-span-1 rounded-xl overflow-hidden relative block shadow-sm hover:ambient-shadow transition-all duration-300" href="#">
+<img alt="Arts District" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="vibrant arts district street level view with colorful murals and brick loft buildings" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5xrp1rhAdpwOJHROIsRcx35MiOxKw1C45YlaeuTIDpUddo_v3Dex-L3mIor_OGF7AbYKt5vdIiWH9hTsgshJc3gIbh6oQn3YWvrOkPzDliGukzcch2BbILviaaj62rS-lqdtW7JUbFEraB45FukA1OaZsF3W3ITheWkRMWqpL3r5g_ZiHWkactU3FCFmzRAqW2xK12qYEHsF56nBno8rNiqK43Doa8-KyhF-5LHsG24VMx1YCJ5byGLiYZagCoQHG6FXN0jAQ9waq"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/90 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-stack-sm w-full">
+<h3 class="font-body-base text-body-base font-bold text-on-primary">Arts District</h3>
+<p class="font-body-sm text-body-sm text-on-primary/80 mt-1">Lofts &amp; Studios</p>
+</div>
+</a>
+<!-- Medium Card 3 -->
+<a class="group md:col-span-1 rounded-xl overflow-hidden relative block shadow-sm hover:ambient-shadow transition-all duration-300" href="#">
+<img alt="Harbor Point" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="tranquil waterfront promenade with modern high rise apartments in the background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0WisA_mkLF8kkumDMDX3pJmoCivX8ndEV0Q935UFCnzOxjRpAOKkQ4rp1wYidngvd6ofIGMwO41KJ_wYuiYZGY_NN6n8ayHIi6RwhbMxlP0fZyvVhrOQZQ-f2H-grMoyGSsJ5ADb1os3kmBcG3dXqVhNmF3Gm_Zs_cfI1aifKtOAPEkkHsMp2z70G0a8_3DkZE2F6EBT7Nw_fOJZeTG0ZtREdJHrNaOg_haP1oS7Mp3OYFVpPhVKT_MRd6wjuIEkWxXzlvTICPXa_"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/90 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-stack-sm w-full">
+<h3 class="font-body-base text-body-base font-bold text-on-primary">Harbor Point</h3>
+<p class="font-body-sm text-body-sm text-on-primary/80 mt-1">Luxury Waterfront</p>
+</div>
+</a>
+</div>
+</section>
+<!-- Recently Added (Horizontal Scroll) -->
+<section class="py-stack-lg bg-surface pl-margin-mobile md:pl-margin-desktop overflow-hidden border-t border-b border-surface-container-high">
+<div class="pr-margin-mobile md:pr-margin-desktop mb-stack-md flex justify-between items-center">
+<h2 class="font-headline-h2 text-headline-h2 text-on-surface">Recently Added</h2>
+<a class="font-label-bold text-label-bold text-primary hover:underline flex items-center gap-1" href="#">
+                    View All <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+<div class="flex gap-stack-md overflow-x-auto pb-stack-sm snap-x snap-mandatory hide-scrollbar pr-margin-mobile md:pr-margin-desktop">
+<!-- Property Card 1 -->
+<div class="min-w-[280px] md:min-w-[320px] snap-start bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden hover:ambient-shadow transition-shadow duration-300 group cursor-pointer">
+<div class="relative h-48 overflow-hidden">
+<img alt="Property Image" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="interior of a modern bright minimalist apartment living room with large windows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-3t5Zcyz_eIzlE6kxgeySQlpQr3BuPzkq_01_T4_Db9yCeu3EWshuObSa5OX3HPItpVD2IZtlB_Q42-YaDQunfNY3SOemecLz8NtgwfvvlID8UOZR98jK3Q8N_-Ot03yoWy3H5V0H6qfMoMbG6vaHkAAgRkzwcUD_mgBEe9YCg4CU0Pjw-EhZO2SdgFwwqNa5g3kZr6g4TxZxV5zaNi5CA7xdV3SJ1YQNfuZ3GYaOdqXds9ZO7X__6Vn70gB8lMjcDILpDGGGBmW3"/>
+<div class="absolute top-2 left-2 bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface font-label-bold text-label-bold px-2 py-1 rounded-md border border-outline-variant shadow-sm flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+                            New
+                        </div>
+<div class="absolute bottom-2 right-2 bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface px-2 py-1 rounded-md border border-outline-variant font-label-bold text-label-bold">
+                            $2,450/mo
+                        </div>
+</div>
+<div class="p-stack-sm">
+<p class="font-label-subtle text-label-subtle text-on-surface-variant uppercase tracking-wider mb-1">Downtown Metro</p>
+<h3 class="font-body-base text-body-base font-bold text-on-surface truncate">The Harrison Lofts - Unit 4B</h3>
+<div class="h-px w-full bg-surface-container-high my-3"></div>
+<div class="flex items-center gap-4 text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">bed</span> 2
+                            </div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">shower</span> 2
+                            </div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">square_foot</span> 950 sqft
+                            </div>
+</div>
+</div>
+</div>
+<!-- Property Card 2 -->
+<div class="min-w-[280px] md:min-w-[320px] snap-start bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden hover:ambient-shadow transition-shadow duration-300 group cursor-pointer">
+<div class="relative h-48 overflow-hidden">
+<img alt="Property Image" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="exterior of a modern brick townhouse with black framed windows and small front garden" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAe9LQ2rjtd_k1H0ImcI83hbryYQ2hUheMgF5yasQKx96lDzGJ6IhzivTipjjJTUA_5hsA88gd7RXlOcbWVQLIazbwPPRlw0bLh0cXsWryBkEL063m3eH9wAyCG_X0f8e6eFPXyBllH1S_fN1TgCiqhwuPlPW8mlgmH_7svwQhUdCksNGg1QRrZ6UYUMk0VY5lixfiY7hg3JhXJR7N-3RCjIo93Im9IEjTRvlWdP821ZGtajatifNSUPmQO146UCI6RmlsJQ7edKJEL"/>
+<div class="absolute top-2 left-2 bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface font-label-bold text-label-bold px-2 py-1 rounded-md border border-outline-variant shadow-sm flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></div>
+                            Verified
+                        </div>
+<div class="absolute bottom-2 right-2 bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface px-2 py-1 rounded-md border border-outline-variant font-label-bold text-label-bold">
+                            $3,100/mo
+                        </div>
+</div>
+<div class="p-stack-sm">
+<p class="font-label-subtle text-label-subtle text-on-surface-variant uppercase tracking-wider mb-1">Westside Heights</p>
+<h3 class="font-body-base text-body-base font-bold text-on-surface truncate">142 Maple Street Townhome</h3>
+<div class="h-px w-full bg-surface-container-high my-3"></div>
+<div class="flex items-center gap-4 text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">bed</span> 3
+                            </div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">shower</span> 2.5
+                            </div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">square_foot</span> 1400 sqft
+                            </div>
+</div>
+</div>
+</div>
+<!-- Property Card 3 -->
+<div class="min-w-[280px] md:min-w-[320px] snap-start bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden hover:ambient-shadow transition-shadow duration-300 group cursor-pointer">
+<div class="relative h-48 overflow-hidden">
+<img alt="Property Image" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="view from a high rise balcony showing city lights and a sleek outdoor seating area" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBat_MKEcxtZdzYInKl7pQ8HrJuLicKY_sWoQjfix2JVr9nngpIusQ31zPzPSq4H4ewmZ5qynkR3FuMfU0GAdlLIsHvCibZXtxlY_nxEIhKO0mC7WEVLQun6nhhVbDkyXkO90IPltLGxLiAVTTWOSA4pUTgXwsiyJ90y2D9m6Gc9F2ZSnv2OIQ9NaY63ApSXkffMYWYtv2jFh5r3i1NY1vzuRzEdJUMzvYyeQbMZdvnJH-TiSMkwXjiFCk0nOLr5GPeMLtB7Cn6zIzf"/>
+<div class="absolute bottom-2 right-2 bg-surface-container-lowest/90 backdrop-blur-sm text-on-surface px-2 py-1 rounded-md border border-outline-variant font-label-bold text-label-bold">
+                            $1,850/mo
+                        </div>
+</div>
+<div class="p-stack-sm">
+<p class="font-label-subtle text-label-subtle text-on-surface-variant uppercase tracking-wider mb-1">Arts District</p>
+<h3 class="font-body-base text-body-base font-bold text-on-surface truncate">Canvas Studios - Apt 201</h3>
+<div class="h-px w-full bg-surface-container-high my-3"></div>
+<div class="flex items-center gap-4 text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">bed</span> 1
+                            </div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">shower</span> 1
+                            </div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">square_foot</span> 650 sqft
+                            </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- How Rentd Works -->
+<section class="px-margin-mobile md:px-margin-desktop py-stack-lg">
+<div class="text-center mb-stack-md max-w-2xl mx-auto">
+<span class="inline-block px-3 py-1 bg-surface-container-highest text-on-surface font-label-bold text-label-bold rounded-full mb-stack-xs uppercase tracking-widest border border-outline-variant">Methodology</span>
+<h2 class="font-headline-h1 text-headline-h1 text-on-surface">Data-Driven Discovery</h2>
+<p class="font-body-base text-body-base text-on-surface-variant mt-stack-xs">We don't just wait for listings. We actively monitor social networks and community boards to bring you rentals before they hit the major markets.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-stack-md">
+<!-- Step 1 -->
+<div class="bg-surface-container-lowest p-stack-md rounded-xl border border-outline-variant shadow-sm hover:ambient-shadow transition-shadow">
+<div class="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center mb-stack-sm border border-primary/20">
+<span class="material-symbols-outlined text-primary text-[24px]">radar</span>
+</div>
+<h3 class="font-headline-h2 text-headline-h2 text-on-surface mb-2">1. Algorithmic Scanning</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Our engine continuously parses public social media groups, neighborhood forums, and direct landlord feeds for intent-to-rent signals.</p>
+</div>
+<!-- Step 2 -->
+<div class="bg-surface-container-lowest p-stack-md rounded-xl border border-outline-variant shadow-sm hover:ambient-shadow transition-shadow">
+<div class="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center mb-stack-sm border border-primary/20">
+<span class="material-symbols-outlined text-primary text-[24px]">filter_alt</span>
+</div>
+<h3 class="font-headline-h2 text-headline-h2 text-on-surface mb-2">2. Data Extraction &amp; Structuring</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Raw text and images are processed using NLP to extract key metrics: price, location, amenities, and contact information, standardizing the chaos.</p>
+</div>
+<!-- Step 3 -->
+<div class="bg-surface-container-lowest p-stack-md rounded-xl border border-outline-variant shadow-sm hover:ambient-shadow transition-shadow">
+<div class="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center mb-stack-sm border border-primary/20">
+<span class="material-symbols-outlined text-primary text-[24px]">verified_user</span>
+</div>
+<h3 class="font-headline-h2 text-headline-h2 text-on-surface mb-2">3. Verification &amp; Delivery</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Listings are cross-referenced against public property records to ensure legitimacy before being pushed to your dashboard in real-time.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-2 py-3 pb-safe bg-surface-container-lowest/95 backdrop-blur-md z-50 shadow-[0_-4px_12px_rgba(14,116,144,0.05)] border-t border-outline-variant/30">
+<!-- Active: Home -->
+<a class="flex flex-col items-center justify-center text-primary bg-primary/10 rounded-xl px-4 py-1 active:opacity-80 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-bold text-label-bold mt-1">Home</span>
+</a>
+<!-- Inactive: Search -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-on-surface active:opacity-80 transition-all" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-subtle text-label-subtle mt-1 uppercase tracking-widest text-[10px]">Search</span>
+</a>
+<!-- Inactive: Saved -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-on-surface active:opacity-80 transition-all" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="font-label-subtle text-label-subtle mt-1 uppercase tracking-widest text-[10px]">Saved</span>
+</a>
+<!-- Inactive: Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-on-surface active:opacity-80 transition-all" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-subtle text-label-subtle mt-1 uppercase tracking-widest text-[10px]">Profile</span>
+</a>
+</nav>
+</body></html>
