@@ -47,6 +47,8 @@ function uniqueNonEmpty(values: Array<string | null | undefined>): string[] {
   return [...new Set(values.map((entry) => String(entry ?? "").trim()).filter(Boolean))];
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function PropertyDetails({ params }: PageProps) {
   let objectId: ObjectId;
 

@@ -3,6 +3,7 @@ import Feed from "@/components/Feed";
 import type { ListingDocument } from "@/lib/listing";
 import Link from "next/link";
 import { Building2, CircleDollarSign, Sparkles, TrendingUp } from "lucide-react";
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const client = await clientPromise;
