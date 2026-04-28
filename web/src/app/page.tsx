@@ -1,25 +1,57 @@
 import clientPromise from "@/lib/mongodb";
 import Feed from "@/components/Feed";
-import type { ListingDocument } from "@/lib/listing";
+import type { ListingDocument, ListingMedia } from "@/lib/listing";
 import Link from "next/link";
 import { Building2, CircleDollarSign, Sparkles, TrendingUp } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  const PAGE_SIZE = 120;
   const client = await clientPromise;
   const db = client.db(process.env.MONGODB_DB || "facebook_scraper");
   const collection = db.collection("listings");
+  const listingMatch = { isRentalPost: true, confidence: { $gte: 0.5 } };
 
-  // Fetch a larger but bounded set so client-side filters stay responsive.
+  // Fetch first page and paginate additional records from client.
   const listings = await collection
-    .find({ isRentalPost: true, confidence: { $gte: 0.5 } })
+    .find(listingMatch)
     .sort({ parsedAt: -1 })
-    .limit(600)
+    .limit(PAGE_SIZE)
     .toArray();
+
+  const totalListings = await collection.countDocuments(listingMatch);
+
+  const activeThisWeekResult = await collection.aggregate<{ count: number }>([
+    { $match: listingMatch },
+    {
+      $match: {
+        $expr: {
+          $gte: [
+            {
+              $dateFromString: {
+                dateString: "$postedAt",
+                onError: null,
+                onNull: null,
+              },
+            },
+            {
+              $dateSubtract: {
+                startDate: "$$NOW",
+                unit: "day",
+                amount: 7,
+              },
+            },
+          ],
+        },
+      },
+    },
+    { $count: "count" },
+  ]).toArray();
+  const activeListingsThisWeek = activeThisWeekResult[0]?.count ?? 0;
 
   const serializedListings = listings.map((listing) => {
     // Filter out profile pics and .kf animations from existing DB records
-    const validMedia = listing.media?.filter((m: any) => {
+    const validMedia = listing.media?.filter((m: ListingMedia) => {
       if (!m.url) return false;
       const lower = m.url.toLowerCase();
       if (lower.includes(".kf?") || lower.endsWith(".kf")) return false;
@@ -92,8 +124,8 @@ export default async function Home() {
 
           <div className="relative z-10 mt-8 grid gap-3 sm:grid-cols-3">
             <article className="rounded-2xl border border-app-line/85 bg-white/65 px-4 py-3 shadow-[0_4px_14px_rgba(34,44,38,0.04)]">
-              <p className="text-xs uppercase tracking-[0.14em] text-muted">Active listings</p>
-              <p className="mt-1 text-2xl font-semibold text-app-ink">{serializedListings.length}</p>
+              <p className="text-xs uppercase tracking-[0.14em] text-muted">Active listings (7d)</p>
+              <p className="mt-1 text-2xl font-semibold text-app-ink">{activeListingsThisWeek}</p>
             </article>
             <article className="rounded-2xl border border-app-line/85 bg-white/65 px-4 py-3 shadow-[0_4px_14px_rgba(34,44,38,0.04)]">
               <p className="text-xs uppercase tracking-[0.14em] text-muted">Average monthly rent</p>
@@ -112,7 +144,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <Feed initialListings={serializedListings} />
+        <Feed initialListings={serializedListings} totalListings={totalListings} pageSize={PAGE_SIZE} />
       </main>
     </div>
   );

@@ -14,6 +14,8 @@ type SortOption = "latest" | "price-asc" | "price-desc" | "confidence";
 
 type Props = {
   initialListings: ListingDocument[];
+  totalListings: number;
+  pageSize: number;
 };
 
 function normalizeBhk(value: string | number | null | undefined): string {
@@ -56,7 +58,12 @@ function formatBudgetLabel(option: (typeof BUDGET_OPTIONS)[number]): string {
   return "Above INR 50k";
 }
 
-export default function Feed({ initialListings }: Props) {
+export default function Feed({ initialListings, totalListings, pageSize }: Props) {
+  const [loadedListings, setLoadedListings] = useState<ListingDocument[]>(initialListings);
+  const [totalAvailable, setTotalAvailable] = useState<number>(totalListings);
+  const [filteredTotal, setFilteredTotal] = useState<number>(totalListings);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState("");
   const [search, setSearch] = useState("");
   const [bhkFilter, setBhkFilter] = useState<(typeof BHK_OPTIONS)[number]>("all");
   const [budgetFilter, setBudgetFilter] = useState<(typeof BUDGET_OPTIONS)[number]>("all");
@@ -66,44 +73,9 @@ export default function Feed({ initialListings }: Props) {
   const [sortBy, setSortBy] = useState<SortOption>("latest");
   const filterRailRef = React.useRef<HTMLDivElement | null>(null);
 
+  // Sort loaded listings
   const filteredListings = useMemo<ListingDocument[]>(() => {
-    const query = search.trim().toLowerCase();
-
-    const filtered = initialListings.filter((listing) => {
-      if (query) {
-        const haystack = [
-          listing.title,
-          listing.summary,
-          listing.rawContent,
-          listing.location?.locality,
-          listing.location?.area,
-          listing.location?.city,
-          listing.location?.landmark,
-        ]
-          .map((entry) => String(entry ?? "").toLowerCase())
-          .join(" ");
-
-        if (!haystack.includes(query)) return false;
-      }
-
-      if (bhkFilter !== "all") {
-        const currentBhk = normalizeBhk(listing.bhk);
-        if (currentBhk !== bhkFilter) return false;
-      }
-
-      if (!inBudget(listing, budgetFilter)) return false;
-
-      if (furnishingFilter !== "all") {
-        if (String(listing.furnishing ?? "") !== furnishingFilter) return false;
-      }
-
-      if (ownerFilter === "owner" && listing.isAgent !== false) return false;
-      if (ownerFilter === "agent" && listing.isAgent !== true) return false;
-
-      return true;
-    });
-
-    const sorted = [...filtered].sort((a, b) => {
+    const sorted = [...loadedListings].sort((a, b) => {
       if (sortBy === "price-asc") return getRentMin(a) - getRentMin(b);
       if (sortBy === "price-desc") return getRentMin(b) - getRentMin(a);
       if (sortBy === "confidence") {
@@ -116,15 +88,54 @@ export default function Feed({ initialListings }: Props) {
     });
 
     return sorted;
-  }, [
-    initialListings,
-    search,
-    bhkFilter,
-    budgetFilter,
-    furnishingFilter,
-    ownerFilter,
-    sortBy,
-  ]);
+  }, [loadedListings, sortBy]);
+
+  // When filters or search change, reset to first page and fetch new data
+  React.useEffect(() => {
+    const fetchFiltered = async () => {
+      setIsLoadingMore(true);
+      setLoadError("");
+
+      try {
+        const query = new URLSearchParams({
+          offset: "0",
+          limit: String(pageSize),
+          search: search.trim(),
+          bhk: bhkFilter,
+          budget: budgetFilter,
+          furnishing: furnishingFilter,
+          owner: ownerFilter,
+        });
+
+        const response = await fetch(`/api/listings?${query.toString()}`, {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch listings (${response.status})`);
+        }
+
+        const payload = (await response.json()) as {
+          listings: ListingDocument[];
+          total?: number;
+        };
+
+        setLoadedListings(payload.listings ?? []);
+        if (Number.isFinite(payload.total)) {
+          setFilteredTotal(Math.max(0, Number(payload.total)));
+          setTotalAvailable(Math.max(0, Number(payload.total)));
+        }
+      } catch (error) {
+        setLoadError(error instanceof Error ? error.message : "Could not load listings.");
+        setLoadedListings([]);
+      } finally {
+        setIsLoadingMore(false);
+      }
+    };
+
+    fetchFiltered();
+  }, [search, bhkFilter, budgetFilter, furnishingFilter, ownerFilter, pageSize]);
 
   const clearFilters = () => {
     setSearch("");
@@ -167,6 +178,58 @@ export default function Feed({ initialListings }: Props) {
     rail.addEventListener("wheel", handleWheel, { passive: false });
     return () => rail.removeEventListener("wheel", handleWheel);
   }, []);
+
+  const canLoadMore = loadedListings.length < filteredTotal;
+
+  const loadMore = async () => {
+    if (!canLoadMore || isLoadingMore) return;
+    setIsLoadingMore(true);
+    setLoadError("");
+
+    try {
+      const query = new URLSearchParams({
+        offset: String(loadedListings.length),
+        limit: String(pageSize),
+        search: search.trim(),
+        bhk: bhkFilter,
+        budget: budgetFilter,
+        furnishing: furnishingFilter,
+        owner: ownerFilter,
+      });
+      const response = await fetch(`/api/listings?${query.toString()}`, {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch listings (${response.status})`);
+      }
+
+      const payload = (await response.json()) as {
+        listings: ListingDocument[];
+        total?: number;
+      };
+
+      setLoadedListings((prev) => {
+        const seen = new Set(prev.map((item) => item._id));
+        const next = [...prev];
+        for (const listing of payload.listings ?? []) {
+          if (seen.has(listing._id)) continue;
+          seen.add(listing._id);
+          next.push(listing);
+        }
+        return next;
+      });
+
+      if (Number.isFinite(payload.total)) {
+        setFilteredTotal(Math.max(0, Number(payload.total)));
+      }
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Could not load more listings.");
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   return (
     <section
@@ -314,7 +377,7 @@ export default function Feed({ initialListings }: Props) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted">
           Showing <span className="font-semibold text-app-ink">{filteredListings.length}</span> of{" "}
-          {initialListings.length} listings
+          {filteredTotal} listings
         </p>
         {filteredListings[0] && (
           <p className="text-xs uppercase tracking-[0.12em] text-muted">
@@ -348,6 +411,20 @@ export default function Feed({ initialListings }: Props) {
           </button>
         </div>
       )}
+
+      {canLoadMore ? (
+        <div className="flex flex-col items-center gap-2 pt-1">
+          <button
+            type="button"
+            onClick={loadMore}
+            disabled={isLoadingMore}
+            className="rounded-xl border border-app-line bg-white px-5 py-2.5 text-sm font-semibold text-app-ink transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isLoadingMore ? "Loading..." : `Load more (${Math.min(pageSize, totalAvailable - loadedListings.length)})`}
+          </button>
+          {loadError ? <p className="text-xs text-red-600">{loadError}</p> : null}
+        </div>
+      ) : null}
     </section>
   );
 }
