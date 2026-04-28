@@ -39,6 +39,19 @@ def init_mongo(uri: str, db_name: str, collection_name: str):
         return None
     client = MongoClient(uri)
     coll = client[db_name][collection_name]
+    
+    # Drop non-sparse postId index if it exists (prevents E11000 errors on empty postId)
+    try:
+        existing_indexes = {idx['name']: idx for idx in coll.list_indexes()}
+        if 'postId_1' in existing_indexes:
+            idx = existing_indexes['postId_1']
+            # If it exists and is NOT sparse, drop it so we can recreate as sparse
+            if not idx.get('sparse', False):
+                coll.drop_index('postId_1')
+    except Exception:
+        pass
+    
+    # Create indexes (sparse allows multiple empty/null values)
     coll.create_index("postId", unique=True, sparse=True)
     coll.create_index("permalink", unique=True, sparse=True)
     coll.create_index("dedupeKey", unique=True, sparse=True)
@@ -267,7 +280,7 @@ async def scrape_group(page, group_url: str, max_posts: int, scroll_delay: int, 
         else:
             merged[key_for_post(post)] = post
 
-    results = [p for p in merged.values() if (p.get("content","") and len(p["content"]) >= 8) or p.get("permalink")]
+    results = [p for p in merged.values() if (p.get("postId") or p.get("permalink")) and ((p.get("content","") and len(p["content"]) >= 8) or p.get("permalink"))]
     results.sort(key=lambda p: p.get("timestamp","") or "", reverse=True)
     return results[:max_posts]
 

@@ -31,4 +31,4 @@ STATE_FILE = os.getenv("STATE_FILE", ".facebook-state.json")
 
 # ── Parser defaults ─────────────────────────────────────────────────────
 PARSER_BATCH_SIZE = int(os.getenv("PARSER_BATCH_SIZE", "10"))
-PARSER_POLL_INTERVAL = int(os.getenv("PARSER_POLL_INTERVAL", "30"))
+PARSER_POLL_INTERVAL = int(os.getenv("PARSER_POLL_INTERVAL", "120"))
