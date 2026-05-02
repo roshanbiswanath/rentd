@@ -15,7 +15,9 @@ function sanitizeListing(listing: RawListing): ListingDocument {
     if (!m?.url) return false;
     const lower = m.url.toLowerCase();
     if (lower.includes(".kf?") || lower.endsWith(".kf")) return false;
-    if (/_[sp]\d+x\d+_/i.test(lower)) return false;
+    // Profile-pic/thumbnail sizes: _s32x32_, _s32x32&, stp=...s32x32
+    if (/_[sp]\d{1,3}x\d{1,3}([_&]|$)/i.test(lower)) return false;
+    if (/[&?]stp=[^&]*s\d{1,3}x\d{1,3}/i.test(lower)) return false;
     return true;
   });
 
@@ -41,7 +43,7 @@ export async function GET(request: NextRequest) {
     ? Math.max(1, Math.min(200, Math.floor(limitRaw)))
     : 120;
 
-  const match: Record<string, unknown> = { isRentalPost: true, confidence: { $gte: 0.5 } };
+  const match: Record<string, unknown> = { isRentalPost: true, confidence: { $gte: 0.5 }, isAvailable: { $ne: false } };
 
   // Apply search filter
   if (searchQuery.trim()) {

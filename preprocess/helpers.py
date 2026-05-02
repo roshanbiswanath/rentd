@@ -110,6 +110,12 @@ def is_allowed_media_url(url: str) -> bool:
     if re.search(r"\.(jpe?g|png|webp|gif|bmp|mp4|m3u8)(\?|$)", v, re.I): return True
     return False
 
+def is_minimum_image_size(width, height, min_dimension: int = 150) -> bool:
+    """Check if image dimensions meet minimum threshold. Filters out thumbnails/avatars."""
+    if not isinstance(width, (int, float)) or not isinstance(height, (int, float)):
+        return True  # Unknown dimensions are allowed (could be legitimate)
+    return width >= min_dimension and height >= min_dimension
+
 def merge_media(base: list, incoming: list) -> list:
     def media_key(url):
         try:

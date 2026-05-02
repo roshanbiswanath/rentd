@@ -24,7 +24,7 @@ import config
 from helpers import (
     normalize_text, normalize_permalink, parse_post_id, enforce_chronological,
     fallback_post_key, pick_post_key, key_for_post, merge_post, merge_media,
-    content_hash, parse_graphql_json_blocks
+    content_hash, parse_graphql_json_blocks, is_minimum_image_size, is_allowed_media_url
 )
 from graphql_extract import (
     collect_story_nodes, is_likely_comment_id, extract_candidate_urls,
@@ -59,6 +59,56 @@ def init_mongo(uri: str, db_name: str, collection_name: str):
     return {"client": client, "collection": coll, "db": db_name, "coll_name": collection_name}
 
 
+def sanitize_media(media_list: list) -> list:
+    """Filter out small images (thumbnails/avatars) and keep only meaningful media."""
+    if not media_list:
+        return []
+    
+    result = []
+    for item in media_list:
+        if not isinstance(item, dict):
+            continue
+        
+        media_type = item.get("type", "").lower()
+        url = str(item.get("url") or "")
+
+        if not is_allowed_media_url(url):
+            continue
+        
+        # Always keep videos
+        if media_type == "video":
+            result.append(item)
+            continue
+        
+        # For images, check minimum size and URL patterns (avatars/thumbnails/profile pics)
+        if media_type == "image":
+            width = item.get("width")
+            height = item.get("height")
+            lower_url = url.lower()
+            looks_like_avatar = any(
+                token in lower_url for token in (
+                    "/profile_pic/",
+                    "/profile/",
+                    "safe_image.php",
+                    "emoji.php",
+                    "/rsrc.php",
+                    "thumbnail",
+                    "preview",
+                    "sprite",
+                    "s32x32",
+                    "s48x48",
+                    "s64x64",
+                    "_s32x32",
+                    "_s48x48",
+                    "_s64x64",
+                )
+            )
+            if not looks_like_avatar and is_minimum_image_size(width, height, min_dimension=150):
+                result.append(item)
+    
+    return result
+
+
 def upsert_posts(collection, posts: list, context: dict) -> dict:
     if collection is None or not posts:
         return {"matched": 0, "modified": 0, "upserted": 0}
@@ -68,7 +118,7 @@ def upsert_posts(collection, posts: list, context: dict) -> dict:
         np = {
             "author": post.get("author",""), "content": post.get("content",""),
             "timestamp": post.get("timestamp",""), "permalink": post.get("permalink",""),
-            "postId": post.get("postId",""), "media": post.get("media",[]),
+            "postId": post.get("postId",""), "media": sanitize_media(post.get("media",[])),
         }
         dk = fallback_post_key(np)
         filt = ({"postId": np["postId"]} if np["postId"]
@@ -89,6 +139,94 @@ def upsert_posts(collection, posts: list, context: dict) -> dict:
     bulk = [UpdateOne(o["filter"], {"$set": o["update"]["$set"], "$setOnInsert": o["update"]["$setOnInsert"]}, upsert=True) for o in ops]
     result = collection.bulk_write(bulk, ordered=False)
     return {"matched": result.matched_count, "modified": result.modified_count, "upserted": result.upserted_count}
+
+
+def _known_key_for_doc(post_id: str = "", permalink: str = "", dedupe_key: str = "") -> str:
+    if post_id:
+        return f"id:{post_id}"
+    if permalink:
+        return f"url:{permalink}"
+    if dedupe_key:
+        return f"dk:{dedupe_key}"
+    return ""
+
+
+def load_known_post_keys(collection, group_url: str, limit: int = 10000) -> set[str]:
+    """Load known keys from Mongo so scraper can stop once it reaches old posts."""
+    if collection is None or not group_url:
+        return set()
+
+    keys: set[str] = set()
+    cursor = collection.find(
+        {"groupUrl": group_url},
+        {"postId": 1, "permalink": 1, "dedupeKey": 1},
+    ).sort("updatedAt", -1).limit(max(1, int(limit)))
+
+    for doc in cursor:
+        post_id = str(doc.get("postId") or "").strip()
+        permalink = normalize_permalink(str(doc.get("permalink") or "").strip())
+        dedupe_key = str(doc.get("dedupeKey") or "").strip()
+        key = _known_key_for_doc(post_id=post_id, permalink=permalink, dedupe_key=dedupe_key)
+        if key:
+            keys.add(key)
+
+    return keys
+
+
+def is_known_post(post: dict, known_keys: set[str]) -> bool:
+    if not known_keys:
+        return False
+
+    post_id = str(post.get("postId") or "").strip()
+    permalink = normalize_permalink(str(post.get("permalink") or "").strip())
+    dk = fallback_post_key({
+        "author": post.get("author", ""),
+        "content": post.get("content", ""),
+        "timestamp": post.get("timestamp", ""),
+    })
+
+    candidates = [
+        _known_key_for_doc(post_id=post_id),
+        _known_key_for_doc(permalink=permalink),
+        _known_key_for_doc(dedupe_key=dk),
+    ]
+    return any(k and k in known_keys for k in candidates)
+
+
+def build_merged_results(api_posts: dict, dom_posts: dict, max_posts: int | None = None) -> list:
+    """Merge API and DOM post maps into normalized, deduped, sorted results."""
+    merged = {}
+    for post in api_posts.values():
+        merged[key_for_post(post)] = post
+    for post in dom_posts.values():
+        found_key = ""
+        for mk, mp in merged.items():
+            if post.get("postId") and mp.get("postId") and post["postId"] == mp["postId"]:
+                found_key = mk
+                break
+            if post.get("permalink") and mp.get("permalink") and post["permalink"] == mp["permalink"]:
+                found_key = mk
+                break
+            sa, sb = post.get("author", "").lower(), mp.get("author", "").lower()
+            if sa and sb and sa == sb:
+                a, b = content_hash(post.get("content", "")), content_hash(mp.get("content", ""))
+                if a and b and (a == b or a.startswith(b) or b.startswith(a)):
+                    found_key = mk
+                    break
+        if found_key:
+            merged[found_key] = merge_post(merged[found_key], post)
+        else:
+            merged[key_for_post(post)] = post
+
+    results = [
+        p for p in merged.values()
+        if (p.get("postId") or p.get("permalink"))
+        and ((p.get("content", "") and len(p["content"]) >= 8) or p.get("permalink"))
+    ]
+    results.sort(key=lambda p: p.get("timestamp", "") or "", reverse=True)
+    if max_posts is None:
+        return results
+    return results[:max_posts]
 
 # ── DOM extraction (runs inside the browser) ─────────────────────────────
 
@@ -168,12 +306,26 @@ SEE_MORE_JS = """
 
 # ── Scrape cycle ─────────────────────────────────────────────────────────
 
-async def scrape_group(page, group_url: str, max_posts: int, scroll_delay: int, max_empty: int) -> list:
+async def scrape_group(
+    page,
+    group_url: str,
+    max_posts: int,
+    scroll_delay: int,
+    max_empty: int,
+    known_keys: set[str] | None = None,
+    known_stop_streak: int = 8,
+    flush_every: int = 0,
+    on_flush=None,
+) -> tuple[list, bool]:
     api_posts, dom_posts = {}, {}
     group_id = ""
     m = re.search(r"/groups/([^/?]+)", group_url, re.I)
     if m: group_id = m.group(1)
     combined = 0; empty_scrolls = 0; api_resp_count = 0
+    stop_by_known = False
+    consecutive_known = 0
+    seen_scroll_keys = set()
+    emitted_keys = set()
 
     def should_capture(name, body):
         if re.search(r"GroupsCometFeed|GroupFeed|StoriesPagination|CometFeedRegularStories", name, re.I): return True
@@ -208,7 +360,7 @@ async def scrape_group(page, group_url: str, max_posts: int, scroll_delay: int, 
                         "author": extract_author(story), "content": extract_message(story),
                         "timestamp": format_timestamp_iso(extract_timestamp(story)),
                         "permalink": normalize_permalink(permalink), "postId": post_id,
-                        "media": merge_media([], extract_media(story))
+                        "media": sanitize_media(merge_media([], extract_media(story)))
                     }
                     if not post["permalink"] and post["postId"] and group_id:
                         post["permalink"] = f"https://www.facebook.com/groups/{group_id}/posts/{post['postId']}/"
@@ -247,10 +399,40 @@ async def scrape_group(page, group_url: str, max_posts: int, scroll_delay: int, 
             post["author"] = normalize_text(post.get("author",""))
             post["content"] = normalize_text(post.get("content",""))
             post["timestamp"] = normalize_text(post.get("timestamp",""))
-            post["media"] = merge_media([], post.get("media",[]))
+            post["media"] = sanitize_media(merge_media([], post.get("media",[])))
+
+            scroll_key = key_for_post(post)
+            if scroll_key not in seen_scroll_keys:
+                seen_scroll_keys.add(scroll_key)
+                if known_keys and known_stop_streak > 0 and is_known_post(post, known_keys):
+                    consecutive_known += 1
+                    if consecutive_known >= known_stop_streak:
+                        stop_by_known = True
+                        break
+                else:
+                    consecutive_known = 0
+
             key = pick_post_key(post)
             existing = dom_posts.get(key)
             dom_posts[key] = merge_post(existing, post) if existing else post
+
+        if stop_by_known:
+            print(f"Stopping early after reaching {known_stop_streak} known posts in a row.")
+            break
+
+        if on_flush and flush_every > 0:
+            snapshot = build_merged_results(api_posts, dom_posts, max_posts=None)
+            pending = []
+            for p in snapshot:
+                k = key_for_post(p)
+                if k in emitted_keys:
+                    continue
+                emitted_keys.add(k)
+                pending.append(p)
+
+            if pending:
+                for i in range(0, len(pending), flush_every):
+                    await on_flush(pending[i:i + flush_every])
 
         cur = max(len(api_posts), len(dom_posts))
         if cur == combined: empty_scrolls += 1
@@ -262,27 +444,8 @@ async def scrape_group(page, group_url: str, max_posts: int, scroll_delay: int, 
 
     page.remove_listener("response", on_response)
 
-    # Merge API + DOM
-    merged = {}
-    for post in api_posts.values():
-        merged[key_for_post(post)] = post
-    for post in dom_posts.values():
-        found_key = ""
-        for mk, mp in merged.items():
-            if post.get("postId") and mp.get("postId") and post["postId"] == mp["postId"]: found_key = mk; break
-            if post.get("permalink") and mp.get("permalink") and post["permalink"] == mp["permalink"]: found_key = mk; break
-            sa = post.get("author","").lower(); sb = mp.get("author","").lower()
-            if sa and sb and sa == sb:
-                a, b = content_hash(post.get("content","")), content_hash(mp.get("content",""))
-                if a and b and (a == b or a.startswith(b) or b.startswith(a)): found_key = mk; break
-        if found_key:
-            merged[found_key] = merge_post(merged[found_key], post)
-        else:
-            merged[key_for_post(post)] = post
-
-    results = [p for p in merged.values() if (p.get("postId") or p.get("permalink")) and ((p.get("content","") and len(p["content"]) >= 8) or p.get("permalink"))]
-    results.sort(key=lambda p: p.get("timestamp","") or "", reverse=True)
-    return results[:max_posts]
+    results = build_merged_results(api_posts, dom_posts, max_posts=max_posts)
+    return results, stop_by_known
 
 # ── Main ─────────────────────────────────────────────────────────────────
 
@@ -301,6 +464,10 @@ async def main():
     parser.add_argument("--mongo-collection", default=config.RAW_POSTS_COLLECTION)
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--prepare-session", action="store_true")
+    parser.add_argument("--known-stop-streak", type=int, default=config.DEFAULT_KNOWN_STOP_STREAK)
+    parser.add_argument("--known-keys-limit", type=int, default=config.DEFAULT_KNOWN_KEYS_LIMIT)
+    parser.add_argument("--deep-cap-multiplier", type=int, default=config.DEFAULT_DEEP_CAP_MULTIPLIER)
+    parser.add_argument("--progress-flush-posts", type=int, default=config.DEFAULT_PROGRESS_FLUSH_POSTS)
     args = parser.parse_args()
 
     if not args.group_url and not args.prepare_session:
@@ -359,15 +526,90 @@ async def main():
                         print(f"✧ Fresh group detected. Boosting backfill to 500 posts...")
                         current_max = max(current_max, 500)
 
+                known_keys = set()
+                if mongo and group_url:
+                    known_keys = load_known_post_keys(
+                        mongo["collection"],
+                        group_url,
+                        limit=args.known_keys_limit,
+                    )
+
+                    # If the group already has data, allow deeper scan than max-posts so we can
+                    # pass today's newest posts and stop at the first known boundary.
+                    if known_keys and args.deep_cap_multiplier > 1:
+                        current_max = max(current_max, args.max_posts * args.deep_cap_multiplier)
+                        print(
+                            f"Loaded {len(known_keys)} known keys. "
+                            f"Deep scan cap for this cycle: {current_max}."
+                        )
+
                 page = None
                 try:
                     page = await context.new_page()
-                    posts = await scrape_group(page, group_url, current_max, args.scroll_delay_ms, args.max_empty_scrolls)
+                    flushed_new_total = 0
+
+                    async def persist_chunk(chunk_posts: list):
+                        nonlocal known_keys, flushed_new_total
+                        if not mongo or not chunk_posts:
+                            return
+
+                        chunk_new = chunk_posts
+                        if known_keys:
+                            chunk_new = [p for p in chunk_posts if not is_known_post(p, known_keys)]
+                        if not chunk_new:
+                            return
+
+                        r = upsert_posts(mongo["collection"], chunk_new, {"groupUrl": group_url, "scrapedAt": scraped_at})
+                        flushed_new_total += len(chunk_new)
+                        print(
+                            f"Checkpoint: saved {len(chunk_new)} new posts "
+                            f"(upserted={r['upserted']}, modified={r['modified']}, matched={r['matched']})"
+                        )
+
+                        for p in chunk_new:
+                            pid = str(p.get("postId") or "").strip()
+                            permalink = normalize_permalink(str(p.get("permalink") or "").strip())
+                            dk = fallback_post_key({
+                                "author": p.get("author", ""),
+                                "content": p.get("content", ""),
+                                "timestamp": p.get("timestamp", ""),
+                            })
+                            for key in (
+                                _known_key_for_doc(post_id=pid),
+                                _known_key_for_doc(permalink=permalink),
+                                _known_key_for_doc(dedupe_key=dk),
+                            ):
+                                if key:
+                                    known_keys.add(key)
+
+                    posts, stopped_by_known = await scrape_group(
+                        page,
+                        group_url,
+                        current_max,
+                        args.scroll_delay_ms,
+                        args.max_empty_scrolls,
+                        known_keys=known_keys,
+                        known_stop_streak=args.known_stop_streak,
+                        flush_every=args.progress_flush_posts,
+                        on_flush=persist_chunk if mongo and args.progress_flush_posts > 0 else None,
+                    )
+
+                    new_posts = posts
+                    if known_keys:
+                        new_posts = [p for p in posts if not is_known_post(p, known_keys)]
+
                     payload = {"groupUrl": group_url, "scrapedAt": scraped_at, "postCount": len(posts), "posts": posts}
                     output_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
-                    print(f"Cycle {cycle}: saved {len(posts)} posts to {output_path}")
+                    print(
+                        f"Cycle {cycle}: saved {len(posts)} posts "
+                        f"({len(new_posts)} new, {len(posts) - len(new_posts)} known) to {output_path}"
+                    )
+                    if flushed_new_total:
+                        print(f"Cycle {cycle}: {flushed_new_total} new posts were already checkpointed during scan.")
+                    if stopped_by_known:
+                        print("Reached known boundary. Next cycle will restart from top for fresh discovery.")
                     if mongo:
-                        r = upsert_posts(mongo["collection"], posts, {"groupUrl": group_url, "scrapedAt": scraped_at})
+                        r = upsert_posts(mongo["collection"], new_posts, {"groupUrl": group_url, "scrapedAt": scraped_at})
                         print(f"Cycle {cycle}: MongoDB upserted={r['upserted']}, modified={r['modified']}, matched={r['matched']}")
                 except Exception as e:
                     print(f"Cycle {cycle} failed: {e}")

@@ -11,6 +11,8 @@ from pymongo import MongoClient
 
 import config
 from helpers import classify_media_url
+from image_dedup import check_and_handle_repost, store_hashes, ensure_hash_index
+from bson import ObjectId
 
 # ── Structured output schema ────────────────────────────────────────────
 
@@ -460,6 +462,10 @@ def run_parser(mongo_uri: str, db_name: str, raw_coll: str, listings_coll: str,
     listing_collection.create_index([("isRentalPost", 1)])
     listing_collection.create_index([("confidence", -1)])
     listing_collection.create_index([("parsedAt", -1)])
+    listing_collection.create_index([("isAvailable", 1)])
+
+    # Image dedup hash index
+    ensure_hash_index(db)
 
     print(f"Parser connected to MongoDB: {db_name}")
     print(f"  Raw posts: {raw_coll} → Listings: {listings_coll}")
@@ -518,11 +524,32 @@ def run_parser(mongo_uri: str, db_name: str, raw_coll: str, listings_coll: str,
                              {"permalink": listing["permalink"]} if listing["permalink"] else \
                              {"rawContent": listing["rawContent"][:500]}
 
-                listing_collection.update_one(
+                # ── Image dedup: detect reposts before saving ──────────────
+                matched_old = check_and_handle_repost(db, listing, listing_collection)
+                if matched_old:
+                    # Flag this new post as a replacement so the feed shows the fresh one
+                    listing["replacesListing"] = matched_old
+
+                result = listing_collection.update_one(
                     filter_doc,
-                    {"$set": listing, "$setOnInsert": {"createdAt": datetime.now(timezone.utc)}},
+                    {"$set": listing, "$setOnInsert": {"createdAt": datetime.now(timezone.utc), "isAvailable": True}},
                     upsert=True
                 )
+
+                # Store image hashes for future dedup comparisons
+                saved_id = result.upserted_id or listing_collection.find_one(filter_doc, {"_id": 1})["_id"]
+                store_hashes(db, str(saved_id), [m["url"] for m in listing.get("media", []) if m.get("type") == "image"])
+                # If we detected a matched old listing earlier, update that document to point
+                # to the new listing id so the frontend can redirect or show replacement info.
+                if matched_old:
+                    try:
+                        listing_collection.update_one(
+                            {"_id": ObjectId(matched_old)},
+                            {"$set": {"supersededBy": str(saved_id)}}
+                        )
+                    except Exception:
+                        # Non-fatal: if the id is invalid or update fails, continue.
+                        pass
                 conf = listing["confidence"]
                 conf_bar = "█" * int(conf * 10) + "░" * (10 - int(conf * 10))
                 loc = listing['location']['locality'] or listing['location']['area'] or '?'

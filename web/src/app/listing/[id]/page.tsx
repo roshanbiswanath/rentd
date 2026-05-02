@@ -11,7 +11,7 @@ import {
   listingTitle,
 } from "@/lib/listing";
 import { ObjectId } from "mongodb";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -70,6 +70,16 @@ export default async function PropertyDetails({ params }: PageProps) {
     _id: String(rawListing._id),
   } as ListingDocument;
 
+  // If this listing has been marked unavailable (superseded), redirect to the
+  // newer listing when possible so users always see the fresh copy.
+  if (listing.isAvailable === false) {
+    const target = String(listing.supersededBy || "").trim();
+    if (target && /^[0-9a-fA-F]{24}$/.test(target)) {
+      return redirect(`/listing/${target}`);
+    }
+    return notFound();
+  }
+
   const title = listingTitle(listing);
   const summary = listingSummary(listing);
   const location = listingLocation(listing);
@@ -125,9 +135,11 @@ export default async function PropertyDetails({ params }: PageProps) {
                   />
                 )
               ) : (
-                <div className="flex h-full min-h-[320px] items-center justify-center bg-gradient-to-br from-[#dce7de] to-[#c8d5cc] text-muted">
-                  Image not available
-                </div>
+                <img
+                  src="/placeholder.png"
+                  alt="Premium listing placeholder"
+                  className="h-full w-full object-cover grayscale-[0.2] opacity-85"
+                />
               )}
 
               <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/45 to-transparent" />

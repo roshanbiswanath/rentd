@@ -71,7 +71,9 @@ function classifyVisual(item: ListingMedia | null | undefined): ListingVisual | 
     /facebook\.com\/photo(\.php|\/)|facebook\.com\/.*\/photos\//i.test(lower) ||
     /\/groups\/\d+\/posts\/|\/permalink\/\d+|story_fbid=|multi_permalinks=/i.test(lower) ||
     /\.kf(\?|$)/i.test(lower) ||
-    /_[sp]\d+x\d+_/i.test(lower)
+    // Profile-pic/thumbnail size patterns: _s32x32_, _s32x32&, stp=...s32x32, etc.
+    /_[sp]\d{1,3}x\d{1,3}([_&]|$)/i.test(lower) ||
+    /[&?]stp=[^&]*s\d{1,3}x\d{1,3}/i.test(lower)
   ) {
     return null;
   }

@@ -10,7 +10,7 @@ export default async function Home() {
   const client = await clientPromise;
   const db = client.db(process.env.MONGODB_DB || "facebook_scraper");
   const collection = db.collection("listings");
-  const listingMatch = { isRentalPost: true, confidence: { $gte: 0.5 } };
+  const listingMatch = { isRentalPost: true, confidence: { $gte: 0.5 }, isAvailable: { $ne: false } };
 
   // Fetch first page and paginate additional records from client.
   const listings = await collection
@@ -55,7 +55,9 @@ export default async function Home() {
       if (!m.url) return false;
       const lower = m.url.toLowerCase();
       if (lower.includes(".kf?") || lower.endsWith(".kf")) return false;
-      if (/_[sp]\d+x\d+_/i.test(lower)) return false;
+      // Profile-pic/thumbnail sizes: _s32x32_, _s32x32&, stp=...s32x32
+      if (/_[sp]\d{1,3}x\d{1,3}([_&]|$)/i.test(lower)) return false;
+      if (/[&?]stp=[^&]*s\d{1,3}x\d{1,3}/i.test(lower)) return false;
       return true;
     }) || [];
 

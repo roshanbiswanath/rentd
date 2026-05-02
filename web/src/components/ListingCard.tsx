@@ -59,9 +59,11 @@ export default function ListingCard({ listing, index = 0 }: ListingCardProps) {
               />
             )
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#e4ece2] to-[#ccd7cf] text-sm font-medium text-muted">
-              Image pending
-            </div>
+            <img
+              src="/placeholder.png"
+              alt="Premium listing placeholder"
+              className="h-full w-full object-cover grayscale-[0.2] opacity-80"
+            />
           )}
 
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/45 to-transparent" />

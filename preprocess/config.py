@@ -26,7 +26,11 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
 DEFAULT_MAX_POSTS = int(os.getenv("DEFAULT_MAX_POSTS", "50"))
 DEFAULT_SCROLL_DELAY_MS = int(os.getenv("DEFAULT_SCROLL_DELAY_MS", "1800"))
 DEFAULT_MAX_EMPTY_SCROLLS = int(os.getenv("DEFAULT_MAX_EMPTY_SCROLLS", "8"))
-DEFAULT_POLL_INTERVAL = int(os.getenv("DEFAULT_POLL_INTERVAL", "300"))
+DEFAULT_POLL_INTERVAL = int(os.getenv("DEFAULT_POLL_INTERVAL", "150"))
+DEFAULT_KNOWN_STOP_STREAK = int(os.getenv("DEFAULT_KNOWN_STOP_STREAK", "10"))
+DEFAULT_KNOWN_KEYS_LIMIT = int(os.getenv("DEFAULT_KNOWN_KEYS_LIMIT", "10000"))
+DEFAULT_DEEP_CAP_MULTIPLIER = int(os.getenv("DEFAULT_DEEP_CAP_MULTIPLIER", "40"))
+DEFAULT_PROGRESS_FLUSH_POSTS = int(os.getenv("DEFAULT_PROGRESS_FLUSH_POSTS", str(DEFAULT_MAX_POSTS)))
 STATE_FILE = os.getenv("STATE_FILE", ".facebook-state.json")
 
 # ── Parser defaults ─────────────────────────────────────────────────────

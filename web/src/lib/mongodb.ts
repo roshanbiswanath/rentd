@@ -1,10 +1,10 @@
 import { MongoClient } from "mongodb";
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
+// Accept either `MONGODB_URI` (Next convention) or `MONGO_URI` (python/config convention)
+const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
+if (!uri) {
+  throw new Error('Invalid/Missing environment variable: "MONGODB_URI" (or MONGO_URI)');
 }
-
-const uri = process.env.MONGODB_URI;
 const options = {};
 
 let client;
