@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
   // Apply owner filter
   if (ownerFilter && ownerFilter !== "all") {
     if (ownerFilter === "owner") {
-      match.isAgent = { $ne: true };
+      match.isAgent = false;
     } else if (ownerFilter === "agent") {
       match.isAgent = true;
     }
