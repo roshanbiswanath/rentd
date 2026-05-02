@@ -2,7 +2,12 @@ import clientPromise from "@/lib/mongodb";
 import Feed from "@/components/Feed";
 import type { ListingDocument, ListingMedia } from "@/lib/listing";
 import Link from "next/link";
-import { Building2, CircleDollarSign, Sparkles, TrendingUp } from "lucide-react";
+import {
+  Building2,
+  CircleDollarSign,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
@@ -97,11 +102,8 @@ export default async function Home() {
             <Link href="/" className="text-app-ink">Listings</Link>
             <Link href="/neighborhoods" className="transition-colors hover:text-app-ink">Neighborhoods</Link>
             <Link href="/insights" className="transition-colors hover:text-app-ink">Insights</Link>
+            <Link href="/contact" className="transition-colors hover:text-app-ink">Contact</Link>
           </nav>
-
-          <button className="chip rounded-full px-4 py-2 text-sm font-medium transition-all hover:-translate-y-0.5 hover:shadow-sm">
-            Get alerts
-          </button>
         </div>
       </header>
 
