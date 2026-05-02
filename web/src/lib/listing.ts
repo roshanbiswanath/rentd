@@ -50,6 +50,8 @@ export type ListingDocument = {
   contactInfo?: ListingContactInfo | null;
   isAgent?: boolean | null;
   media?: ListingMedia[];
+  isAvailable?: boolean | null;
+  supersededBy?: string | null;
   confidence?: number | null;
   postedAt?: string | null;
   scrapedAt?: string | null;
